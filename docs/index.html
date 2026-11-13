@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Food price outlook for northeast Nigeria</title>
+<meta name="description" content="Staple food prices in Borno and Yobe, a three-month outlook with tested uncertainty bands, and a cash transfer planner. Built on WFP market data.">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.plot.ly/plotly-basic-2.35.2.min.js"></script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <p class="eyebrow">Pricing · Food security</p>
+    <h1>What will food cost in northeast Nigeria in three months?</h1>
+    <p class="lede">Monthly market prices for 23 foods in Borno and Yobe, a three-month outlook with uncertainty bands tested on real history, and a planner that turns the outlook into a cash transfer value.</p>
+    <div class="links">
+      <a href="https://github.com/Chiamaka-Uchenna/nigeria-food-price-forecast/blob/main/notebooks/food_price_forecast.ipynb">Read the notebook</a>
+      <a href="https://github.com/Chiamaka-Uchenna/nigeria-food-price-forecast">Source on GitHub</a>
+      <a href="https://data.humdata.org/dataset/wfp-food-prices-for-nigeria">Dataset (WFP on HDX)</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section><div class="tiles" id="tiles"></div></section>
+
+  <section>
+    <h2>Price explorer and outlook</h2>
+    <p class="section-note">Median retail price across monitored markets. The shaded band is the range that contained 80 percent of actual price changes in a 36-month backtest.</p>
+    <div class="card">
+      <div class="controls">
+        <label class="field">Food<select id="f-commodity"></select></label>
+        <label class="field">State<select id="f-state"><option>Borno</option><option>Yobe</option></select></label>
+        <label class="field">History<select id="f-range"><option value="36">Last 3 years</option><option value="60">Last 5 years</option><option value="999">All</option></select></label>
+      </div>
+      <div class="chart tall" id="c-price"></div>
+      <p class="sub" id="outlook-text" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cash transfer planner</h2>
+    <p class="section-note">Set a monthly food basket for one person. The planner prices it today and at the upper band of the outlook, which is the amount that would have been enough in about nine months out of ten for each item.</p>
+    <div class="card">
+      <div class="controls">
+        <label class="field">State<select id="p-state"><option>Borno</option><option>Yobe</option></select></label>
+        <label class="field">Planning horizon<select id="p-horizon"><option value="1">1 month</option><option value="2">2 months</option><option value="3" selected>3 months</option></select></label>
+      </div>
+      <div class="form-grid" id="basket"></div>
+      <div class="result">
+        <div>
+          <div class="label">Basket cost today</div>
+          <div class="big" id="cost-now">–</div>
+        </div>
+        <div>
+          <p><strong id="cost-high"></strong></p>
+          <p id="cost-text"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The 2023 to 2024 price shock</h2>
+    <p class="section-note">In mid 2023 Nigeria removed its petrol subsidy and floated the naira. Staple prices in these markets nearly tripled in fifteen months.</p>
+    <div class="grid">
+      <div class="card"><h3>Staple food price index</h3><p class="sub">Average of six staples, January 2019 = 100.</p><div class="chart" id="c-index"></div></div>
+      <div class="card"><h3>Exchange rate and petrol price</h3><p class="sub">Both indexed to January 2019 = 100.</p><div class="chart" id="c-drivers"></div></div>
+      <div class="card"><h3>Rice bought by a day of minimum wage</h3><p class="sub">Kilograms of local rice. The jump in July 2024 is the minimum wage rising to 70,000 naira.</p><div class="chart" id="c-rice"></div></div>
+      <div class="card"><h3>Seasonal pattern in cereal prices</h3><p class="sub">Average month-on-month change, 2017 to 2022. Prices climb before the harvest and fall after it.</p><div class="chart" id="c-season"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Does machine learning beat "no change"?</h2>
+    <p class="section-note">A gradient boosted model was tested against two simple rules on forecasts it had never seen. It did not win, so the outlook above uses the simple rule. Lower error is better.</p>
+    <div class="grid">
+      <div class="card"><h3>Forecast error by horizon</h3><p class="sub">Mean absolute percentage error across all foods.</p><div class="chart" id="c-acc"></div></div>
+      <div class="card"><h3>Three-month error by food</h3><p class="sub">Fresh produce is the hardest to forecast.</p><div class="chart tall" id="c-bycom"></div></div>
+      <div class="card"><h3>Do the bands hold up?</h3><p class="sub">Bands built on the first half of the backtest, checked on the second half. The target is 80 percent inside.</p><div class="table-wrap" style="max-height:none"><table id="t-cov"></table></div></div>
+      <div class="card"><h3>Price change over the last 12 months</h3><p class="sub">Latest month against the same month a year earlier.</p><div class="chart tall" id="c-yoy"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Method and limits</h2>
+    <ul class="notes">
+      <li>Data: World Food Programme market monitoring, published on the Humanitarian Data Exchange. Retail prices in Borno and Yobe from January 2017, median across markets each month.</li>
+      <li>Three forecasting methods were compared in a rolling backtest over 36 months, refitted every six months with only past data. The gradient boosted model did not beat the no-change forecast, so it is not deployed.</li>
+      <li>The outlook is the latest price with an empirical 80 percent band for each food category and horizon. Out of sample, the bands contained 82 to 85 percent of actual prices.</li>
+      <li>This covers markets WFP monitors in two states. It is not a national picture, and it cannot anticipate policy shocks.</li>
+    </ul>
+  </section>
+</main>
+
+<footer><div class="wrap">Built by Chiamaka Uchenna. Data from the World Food Programme via the Humanitarian Data Exchange.</div></footer>
+
+<script src="core.js"></script>
+<script>
+const naira = (v) => `₦${DS.fmt(v, 0)}`;
+const monthLabel = (ym) => new Date(`${ym}-15`).toLocaleString("en-US", { month: "long", year: "numeric" });
+const addMonths = (ym, k) => {
+  const [y, m] = ym.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + k, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+};
+
+(async () => {
+  const s = await DS.load("data/summary.json");
+  const months = s.months;
+  const last = months.length - 1;
+  const find = (commodity, state) => s.series.find((x) => x.commodity === commodity && x.state === state);
+  const band = (category, h) => s.bands.find((b) => b.category === category && b.horizon === h);
+  const latestPrice = (series) => { for (let i = last; i >= 0; i--) if (series.prices[i] !== null) return series.prices[i]; return null; };
+
+  const rice2019 = s.rice_kg_per_day.filter((_, i) => months[i].startsWith("2019"));
+  DS.tiles("tiles", [
+    { label: "Price records", value: DS.fmt(s.records, 0), note: `${s.markets} markets, 23 foods, since 2017` },
+    { label: "Staple prices, May 2023 to peak", value: `+${Math.round((s.shock.peak / s.shock.may_2023 - 1) * 100)}%`, note: `peak in ${monthLabel(s.shock.peak_month)}` },
+    { label: "Since the peak", value: `${Math.round((s.shock.latest / s.shock.peak - 1) * 100)}%`, note: `as of ${monthLabel(s.latest_month)}` },
+    { label: "Rice per day of minimum wage", value: `${s.rice_kg_per_day[last].toFixed(1)} kg`, note: `${(rice2019.reduce((a, b) => a + b, 0) / rice2019.length).toFixed(1)} kg in 2019` },
+  ]);
+
+  /* explorer */
+  const commodities = [...new Set(s.series.map((x) => x.commodity))].sort();
+  DS.fill(document.getElementById("f-commodity"), commodities, "Rice (local)");
+  const explore = () => {
+    const series = find(document.getElementById("f-commodity").value, document.getElementById("f-state").value);
+    const span = Number(document.getElementById("f-range").value);
+    const from = Math.max(0, months.length - span);
+    const x = months.slice(from).map((m) => `${m}-15`);
+    const y = series.prices.slice(from);
+    const now = latestPrice(series);
+    const fx = [`${s.latest_month}-15`], mid = [now], lo = [now], hi = [now];
+    [1, 2, 3].forEach((h) => {
+      const b = band(series.category, h);
+      fx.push(`${addMonths(s.latest_month, h)}-15`);
+      mid.push(now); lo.push(now * Math.exp(b.low)); hi.push(now * Math.exp(b.high));
+    });
+    DS.plot("c-price", [
+      { x, y, mode: "lines", name: "Observed price", line: { color: DS.css("--series-1"), width: 2 }, connectgaps: false,
+        hovertemplate: "%{x|%b %Y}<br>₦%{y:,.0f}<extra></extra>" },
+      { x: fx, y: hi, mode: "lines", name: "Upper band", line: { color: DS.css("--series-2"), width: 0 }, showlegend: false, hoverinfo: "skip" },
+      { x: fx, y: lo, mode: "lines", name: "80% band", fill: "tonexty", fillcolor: "rgba(235,104,52,0.18)", line: { color: DS.css("--series-2"), width: 0 },
+        customdata: hi, hovertemplate: "%{x|%b %Y}<br>80% band ₦%{y:,.0f} to ₦%{customdata:,.0f}<extra></extra>" },
+      { x: fx, y: mid, mode: "lines", name: "Outlook (no change)", line: { color: DS.css("--series-2"), width: 2, dash: "dash" },
+        hovertemplate: "%{x|%b %Y}<br>Outlook ₦%{y:,.0f}<extra></extra>" },
+    ], { yaxis: { title: `Naira per ${series.unit}`, rangemode: "tozero" }, xaxis: { type: "date" }, hovermode: "x unified" }, { table: false });
+    const b3 = band(series.category, 3);
+    document.getElementById("outlook-text").textContent =
+      `${series.commodity} in ${series.state}: ${naira(now)} per ${series.unit} in ${monthLabel(s.latest_month)}. ` +
+      `By ${monthLabel(addMonths(s.latest_month, 3))} the price is likely to be between ${naira(now * Math.exp(b3.low))} and ${naira(now * Math.exp(b3.high))} ` +
+      `(${Math.round((Math.exp(b3.low) - 1) * 100)}% to +${Math.round((Math.exp(b3.high) - 1) * 100)}%), based on how ${series.category} prices actually moved over three months in the backtest.`;
+  };
+  ["f-commodity", "f-state", "f-range"].forEach((id) => document.getElementById(id).addEventListener("change", explore));
+  explore();
+
+  /* planner */
+  const ITEMS = ["Rice (local)", "Millet", "Sorghum", "Maize flour", "Beans (white)", "Oil (palm)", "Onions", "Fish"].filter((c) => commodities.includes(c));
+  const basketBox = document.getElementById("basket");
+  ITEMS.forEach((item) => {
+    const label = document.createElement("label");
+    label.className = "field";
+    label.textContent = `${item} (units of ${find(item, "Borno").unit})`;
+    const input = document.createElement("input");
+    input.type = "number"; input.min = 0; input.max = 60; input.step = 1;
+    input.value = s.default_basket[item] || 0;
+    input.dataset.item = item;
+    label.appendChild(input);
+    basketBox.appendChild(label);
+  });
+  const plan = () => {
+    const state = document.getElementById("p-state").value;
+    const h = Number(document.getElementById("p-horizon").value);
+    let now = 0, high = 0;
+    basketBox.querySelectorAll("input").forEach((input) => {
+      const qty = Math.max(0, Number(input.value) || 0);
+      const series = find(input.dataset.item, state);
+      const price = latestPrice(series);
+      now += qty * price;
+      high += qty * price * Math.exp(band(series.category, h).high);
+    });
+    document.getElementById("cost-now").textContent = naira(now);
+    document.getElementById("cost-high").textContent = `Plan for ${naira(high)} in ${monthLabel(addMonths(s.latest_month, h))}`;
+    document.getElementById("cost-text").textContent = now > 0
+      ? `That is a buffer of ${Math.round((high / now - 1) * 100)}% over today's cost in ${state}. Items rarely all reach their upper band together, so this is a cautious figure.`
+      : "Add quantities to price a basket.";
+  };
+  document.getElementById("basket").addEventListener("input", plan);
+  ["p-state", "p-horizon"].forEach((id) => document.getElementById(id).addEventListener("change", plan));
+  plan();
+
+  /* shock charts */
+  const dates = months.map((m) => `${m}-15`);
+  const shockLine = [{ type: "line", x0: "2023-06-01", x1: "2023-06-01", yref: "paper", y0: 0, y1: 1, line: { color: DS.css("--text-muted"), dash: "dot", width: 1.5 } }];
+  const shockNote = [{ x: "2023-06-01", yref: "paper", y: 1, text: "Subsidy removed, naira floated", showarrow: false, xanchor: "right", xshift: -6, font: { size: 11, color: DS.css("--text-muted") } }];
+  DS.plot("c-index", [{ x: dates, y: s.basket, mode: "lines", name: "Staple price index", line: { color: DS.css("--series-1"), width: 2 },
+    hovertemplate: "%{x|%b %Y}<br>Index %{y:.0f}<extra></extra>" }],
+    { xaxis: { type: "date" }, yaxis: { title: "January 2019 = 100", rangemode: "tozero" }, shapes: shockLine, annotations: shockNote }, { table: false });
+
+  const baseIdx = months.indexOf("2019-01");
+  DS.plot("c-drivers", [
+    { x: dates, y: s.fx.map((v) => (v / s.fx[baseIdx]) * 100), mode: "lines", name: "Naira per US dollar", line: { color: DS.css("--series-1"), width: 2 }, hovertemplate: "%{x|%b %Y}<br>Exchange rate index %{y:.0f}<extra></extra>" },
+    { x: dates, y: s.petrol.map((v) => (v / s.petrol[baseIdx]) * 100), mode: "lines", name: "Petrol price", line: { color: DS.css("--series-2"), width: 2 }, hovertemplate: "%{x|%b %Y}<br>Petrol index %{y:.0f}<extra></extra>" },
+  ], { xaxis: { type: "date" }, yaxis: { title: "January 2019 = 100", rangemode: "tozero" }, shapes: shockLine }, { table: false });
+
+  DS.plot("c-rice", [{ x: dates, y: s.rice_kg_per_day, mode: "lines", name: "Kilograms of rice", line: { color: DS.css("--series-1"), width: 2 },
+    hovertemplate: "%{x|%b %Y}<br>%{y:.1f} kg<extra></extra>" }],
+    { xaxis: { type: "date" }, yaxis: { title: "Kilograms of local rice", rangemode: "tozero" }, shapes: shockLine }, { table: false });
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  DS.plot("c-season", [{ type: "bar", x: monthNames, y: s.seasonal, name: "Average monthly change (%)", marker: { color: DS.css("--series-1") },
+    hovertemplate: "%{x}<br>%{y:+.1f}% on the month before<extra></extra>" }],
+    { xaxis: { showgrid: false }, yaxis: { title: "Month-on-month change (%)", zeroline: true, zerolinecolor: DS.css("--border") }, bargap: 0.3 });
+
+  /* backtest */
+  const horizons = s.accuracy.map((r) => `${r["horizon (months)"]} month${r["horizon (months)"] > 1 ? "s" : ""}`);
+  const methods = [["No change MAPE", "No change", "--series-1"], ["Gradient boosting MAPE", "Gradient boosting", "--series-2"], ["Drift MAPE", "Drift", "--series-3"]];
+  DS.plot("c-acc", methods.map(([key, name, color]) => ({
+    type: "bar", x: horizons, y: s.accuracy.map((r) => r[key]), name, marker: { color: DS.css(color) },
+    text: s.accuracy.map((r) => r[key].toFixed(1)), textposition: "outside", cliponaxis: false,
+    hovertemplate: `${name}<br>%{x} ahead<br>%{y:.1f}% error<extra></extra>`,
+  })), { barmode: "group", bargap: 0.25, bargroupgap: 0.08, xaxis: { title: "Forecast horizon", showgrid: false }, yaxis: { title: "Mean absolute percentage error (%)" }, margin: { l: 56, r: 16, t: 24, b: 44 } });
+
+  const bc = [...s.by_commodity].reverse();
+  DS.plot("c-bycom", [
+    { type: "bar", orientation: "h", y: bc.map((r) => r.commodity), x: bc.map((r) => r["No change"]), name: "No change", marker: { color: DS.css("--series-1") }, hovertemplate: "%{y}<br>No change %{x:.1f}%<extra></extra>" },
+    { type: "bar", orientation: "h", y: bc.map((r) => r.commodity), x: bc.map((r) => r["Gradient boosting"]), name: "Gradient boosting", marker: { color: DS.css("--series-2") }, hovertemplate: "%{y}<br>Gradient boosting %{x:.1f}%<extra></extra>" },
+  ], { barmode: "group", bargap: 0.25, xaxis: { title: "Mean absolute percentage error (%)" }, yaxis: { showgrid: false }, margin: { l: 120, r: 16, t: 8, b: 44 } });
+
+  const cov = document.getElementById("t-cov");
+  const head = cov.insertRow();
+  ["Horizon", "Forecasts checked", "Inside band", "Below band", "Above band"].forEach((t) => { const th = document.createElement("th"); th.textContent = t; head.appendChild(th); });
+  s.coverage.forEach((r) => {
+    const row = cov.insertRow();
+    [`${r.horizon} month${r.horizon > 1 ? "s" : ""}`, DS.fmt(r.forecasts, 0), DS.pct(r.coverage), DS.pct(r["below band"]), DS.pct(r["above band"])].forEach((v) => { row.insertCell().textContent = v; });
+  });
+
+  const yoyItems = commodities.map((c) => ({
+    commodity: c,
+    borno: (s.yoy.find((r) => r.commodity === c && r.state === "Borno") || {}).change,
+    yobe: (s.yoy.find((r) => r.commodity === c && r.state === "Yobe") || {}).change,
+  })).sort((a, b) => (a.borno ?? 0) - (b.borno ?? 0));
+  DS.plot("c-yoy", [
+    { type: "bar", orientation: "h", y: yoyItems.map((r) => r.commodity), x: yoyItems.map((r) => r.borno), name: "Borno", marker: { color: DS.css("--series-1") }, hovertemplate: "%{y}, Borno<br>%{x:+.0f}%<extra></extra>" },
+    { type: "bar", orientation: "h", y: yoyItems.map((r) => r.commodity), x: yoyItems.map((r) => r.yobe), name: "Yobe", marker: { color: DS.css("--series-2") }, hovertemplate: "%{y}, Yobe<br>%{x:+.0f}%<extra></extra>" },
+  ], { barmode: "group", bargap: 0.25, xaxis: { title: "Change on a year earlier (%)", zeroline: true, zerolinecolor: DS.css("--border") }, yaxis: { showgrid: false }, margin: { l: 120, r: 16, t: 8, b: 44 } });
+})().catch((err) => {
+  document.querySelector("main").insertAdjacentHTML("afterbegin", `<p class="section-note">Could not load the dashboard data: ${err.message}</p>`);
+});
+</script>
+</body>
+</html>
