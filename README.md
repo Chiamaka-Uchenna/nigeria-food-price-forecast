@@ -2,7 +2,7 @@
 
 Staple food prices in Borno and Yobe: the 2023 to 2024 price shock, an honest test of machine learning against simple forecasts, and a cash transfer planner.
 
-**[Open the live dashboard](https://chiamaka-uchenna.github.io/nigeria-food-price-forecast/)** · **[Read the notebook](notebooks/food_price_forecast.ipynb)**
+**[Open the Streamlit app](https://nigeria-food-price-forecast-yhmk2lutumrsxbj2bzjztr.streamlit.app/)** · **[Open the web dashboard](https://chiamaka-uchenna.github.io/nigeria-food-price-forecast/)** · **[Read the notebook](notebooks/food_price_forecast.ipynb)**
 
 ![Key chart from the analysis](assets/preview.png)
 
@@ -41,7 +41,7 @@ The dashboard is a static page served by GitHub Pages from the `docs/` folder. T
 
 ## Streamlit app
 
-The same model and charts are also packaged as a Streamlit app in `app/`, for hosting on Streamlit Community Cloud or any Python server:
+The same model and charts are deployed as a Streamlit app on Streamlit Community Cloud: [https://nigeria-food-price-forecast-yhmk2lutumrsxbj2bzjztr.streamlit.app/](https://nigeria-food-price-forecast-yhmk2lutumrsxbj2bzjztr.streamlit.app/). If the app has been idle it takes a few seconds to wake up. The code is in `app/`. To run it locally:
 
 ```bash
 pip install -r app/requirements.txt
